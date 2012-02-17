@@ -1,12 +1,15 @@
 package com.julu.weibouser.integration;
 
 import com.julu.weibouser.config.Configuration;
+import weibo4j.Friendships;
 import weibo4j.Users;
 import weibo4j.Weibo;
 import weibo4j.examples.oauth2.Log;
 import weibo4j.model.User;
+import weibo4j.model.UserWapper;
 import weibo4j.model.WeiboException;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -108,6 +111,8 @@ public class SinaWeibo {
     public User getUser(long uid) throws IntegrationException {
         //Actually we shouldn't always new the weibo instance, but due to project time constraints issue
         //Always new it from beginning, later will reuse instance or pooled it
+        if (!grantCallingPrivilege()) throw new IntegrationException("Reach limitation please retrying later", null);
+
         Weibo weibo = new Weibo();
         weibo.setToken(getToken());
         Users um = new Users();
@@ -117,6 +122,24 @@ public class SinaWeibo {
             return user;
         } catch (WeiboException e) {
             throw new IntegrationException("Fetch user with "+ uid + " from weibo meet exception", e);
+        }
+    }
+
+    public List<User> getUserFollowers(long uid, int currentCursor, int counts) throws IntegrationException {
+        if (!grantCallingPrivilege()) throw new IntegrationException("Reach limitation please retrying later", null);
+
+        Weibo weibo = new Weibo();
+        weibo.setToken(getToken());
+
+        Friendships friendships = new Friendships();
+        try {
+            UserWapper userWapper = friendships.getFollowersById("1949215451");
+            List<User> users = userWapper.getUsers();
+
+            return users;
+        } catch (WeiboException e) {
+            throw new IntegrationException("Fetch user's followers with "+ uid +
+                    " from " + currentCursor + " with # " + counts +  " from weibo meet exception", e);
         }
     }
 

@@ -11,9 +11,9 @@ import com.julu.weibouser.eventprocessing.queue.AbstractEventBlockingQueue;
  * Time: 1:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SingUserCrawlingEventQueue extends AbstractEventBlockingQueue<SingleUserCrawlingEvent> {
+public class SingleUserCrawlingEventQueue extends AbstractEventBlockingQueue<SingleUserCrawlingEvent> {
 
-    public SingUserCrawlingEventQueue(int capacity) {
+    public SingleUserCrawlingEventQueue(int capacity) {
         super(capacity);
     }
 

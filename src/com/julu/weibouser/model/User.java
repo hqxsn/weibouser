@@ -21,7 +21,7 @@ public class User {
 
     private String location;
 
-    private int followers;
+    private int followersCount;
     private int friendsCount;
     
     private boolean verified;
@@ -75,12 +75,12 @@ public class User {
         this.location = location;
     }
 
-    public int getFollowers() {
-        return followers;
+    public int getFollowersCount() {
+        return followersCount;
     }
 
-    public void setFollowers(int followers) {
-        this.followers = followers;
+    public void setFollowersCount(int followersCount) {
+        this.followersCount = followersCount;
     }
 
     public int getFriendsCount() {
@@ -123,7 +123,7 @@ public class User {
         cloneUser.setName(sourceUser.getName());
         cloneUser.setDisplayName(sourceUser.getScreenName());
         cloneUser.setUrl(sourceUser.getUrl());
-        cloneUser.setFollowers(sourceUser.getFollowersCount());
+        cloneUser.setFollowersCount(sourceUser.getFollowersCount());
         cloneUser.setLocation(sourceUser.getLocation());
         cloneUser.setGender(sourceUser.getGender());//TODO:Need manipulate for more human reading like "Female" and "Male" rather than "F" and "M"
         cloneUser.setVerified(sourceUser.isVerified());

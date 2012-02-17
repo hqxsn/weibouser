@@ -1,5 +1,6 @@
 package com.julu.weibouser;
 
+import com.julu.weibouser.crawling.CrawlingSystem;
 import com.julu.weibouser.system.AbstractBootstrap;
 
 /**
@@ -14,10 +15,12 @@ public class Bootstrap extends AbstractBootstrap {
     
     @Override
     public void doStartSystem() {
+        //Start CrawlingSystem module and trigger specified user analysis
+        CrawlingSystem.getInstance().simpleAnalysis();
 
     }
-    
-    
+
+
     public static void main(String[] args) {
         if (null == args || args.length == 0 || args.length > 1)
             throw new IllegalArgumentException("Please input the correct args and the project is working w/ runtime.properties");

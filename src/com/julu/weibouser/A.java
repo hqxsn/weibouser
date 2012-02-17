@@ -15,8 +15,8 @@ public class A {
     
     public static void main(String[] args) {
         Weibo weibo = new Weibo();
-        weibo.setToken("2.00tyhuHC09EMdOb738a2d351GLPZdE");
-        String uid =  "1949215451";
+        weibo.setToken("2.00tyhuHC09EMdO9bd67614d1mtI5oC");
+        String uid =  "1709498127";
         Users um = new Users();
         try {
             User user = um.showUserById(uid);
@@ -27,9 +27,18 @@ public class A {
             e.printStackTrace();
         }
 
+        /*try {
+            User user = um.showUserByScreenName("孙楠");
+            Log.logInfo(user.toString());
+
+            user.getFollowersCount();
+        } catch (WeiboException e) {
+            e.printStackTrace();
+        }*/
+
         Friendships friendships = new Friendships();
         try {
-            UserWapper userWapper = friendships.getFollowersById("1949215451");
+            UserWapper userWapper = friendships.getFollowersById("1709498127");
             List<User> users = userWapper.getUsers();
             
             for(User user:users) {
@@ -39,7 +48,7 @@ public class A {
             e.printStackTrace();
         }
 
-        try {
+        /*try {
             UserWapper userWapper = friendships.getFollowersById("1949215451", 2, 1);
             List<User> users = userWapper.getUsers();
 
@@ -48,7 +57,7 @@ public class A {
             }
         } catch (WeiboException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        }*/
     }
     
 }

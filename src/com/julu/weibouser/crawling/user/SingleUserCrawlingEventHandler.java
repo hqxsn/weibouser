@@ -1,16 +1,19 @@
 package com.julu.weibouser.crawling.user;
 
-import com.julu.weibouser.eventprocessing.event.Event;
+import com.julu.weibouser.crawling.CrawlingSystem;
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEvent;
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventFactory;
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventQueue;
 import com.julu.weibouser.eventprocessing.event.EventType;
 import com.julu.weibouser.eventprocessing.exception.EventProcessingException;
 import com.julu.weibouser.eventprocessing.handler.IHandler;
 import com.julu.weibouser.eventprocessing.operator.StandalonePoller;
-import com.julu.weibouser.eventprocessing.queue.EventQueue;
-import com.julu.weibouser.integration.Integration;
+import com.julu.weibouser.eventprocessing.operator.StandalonePusher;
 import com.julu.weibouser.integration.IntegrationException;
 import com.julu.weibouser.integration.SinaWeibo;
 import com.julu.weibouser.logger.ConsoleLogger;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,31 +23,45 @@ import java.util.concurrent.TimeUnit;
  * Time: 2:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SingleUserCrawlingEventHandler implements IHandler<SingleUserCrawlingEvent>, Runnable  {
-    
+public class SingleUserCrawlingEventHandler implements IHandler<SingleUserCrawlingEvent>, Runnable {
+
     private static ConsoleLogger consoleLogger = new ConsoleLogger(SingleUserCrawlingEventHandler.class.getName());
-    
-    private StandalonePoller<SingleUserCrawlingEvent, SingUserCrawlingEventQueue> poller;
-    
-    public SingleUserCrawlingEventHandler(StandalonePoller<SingleUserCrawlingEvent, SingUserCrawlingEventQueue> poller) {
-        this.poller = poller;    
+
+    private StandalonePoller<SingleUserCrawlingEvent, SingleUserCrawlingEventQueue> poller;
+
+    public SingleUserCrawlingEventHandler(StandalonePoller<SingleUserCrawlingEvent, SingleUserCrawlingEventQueue> poller) {
+        this.poller = poller;
     }
-    
+
     public void handle(SingleUserCrawlingEvent event) {
         long uid = event.getOriginalSourceUid();
 
         if (uid > 0) {
             try {
                 weibo4j.model.User user = SinaWeibo.getInstance().getUser(uid);
-                
+
                 if (user != SinaWeibo.USER_NOT_FOUND) {
                     com.julu.weibouser.model.User juluUser = com.julu.weibouser.model.User.compose(user, event.getCrawlingTarget());
+                    //TODO push into persist queue
 
+                    List<UserFollowersCrawlingEvent> subsequentEvents = UserFollowersCrawlingEventFactory.
+                            create(juluUser.getOriginalSourceUid(), juluUser.getFollowersCount());
+
+                    StandalonePusher<UserFollowersCrawlingEvent, UserFollowersCrawlingEventQueue> pusher = new
+                            StandalonePusher<UserFollowersCrawlingEvent, UserFollowersCrawlingEventQueue>(
+                            (UserFollowersCrawlingEventQueue) EventType.FIND_USER_FOLLOWERS.getEventQueue());
+                    for (UserFollowersCrawlingEvent userFollowersCrawlingEvent : subsequentEvents) {
+                        try {
+                            pusher.push(userFollowersCrawlingEvent);
+                        } catch (EventProcessingException e) {
+                            //TODO here will involve retrying process, to be implement later
+                        }
+                    }
 
                 } else {
                     //TODO here will involve some company policy, to be implement later
                 }
-                
+
             } catch (IntegrationException e) {
                 //TODO here will involve retrying process, to be implement later
             }
@@ -52,7 +69,7 @@ public class SingleUserCrawlingEventHandler implements IHandler<SingleUserCrawli
     }
 
     public void run() {
-        while(true) {
+        while (CrawlingSystem.getInstance().isRunning()) {
             try {
                 SingleUserCrawlingEvent event = poller.consume(500l, TimeUnit.MILLISECONDS);
                 if (event != null) {

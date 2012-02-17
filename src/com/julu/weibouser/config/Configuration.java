@@ -13,4 +13,7 @@ public class Configuration {
     public static final String RESET_LIMITATION_INTERVAL = "RESET.USER.CALLING.LIMITS.INTERVAL";
     
     public static final String WEIBO_TOKEN_STRING = "WEIBO.TOKEN";
+    
+    public static final String BATCH_CALLING_SIZE = "BATCH.CALLING.SIZE";
+    public static final String SPECIFIED_USER_ID = "WEIBO.USER.ID";
 }
