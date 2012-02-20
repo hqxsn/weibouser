@@ -16,4 +16,9 @@ public class Configuration {
     
     public static final String BATCH_CALLING_SIZE = "BATCH.CALLING.SIZE";
     public static final String SPECIFIED_USER_ID = "WEIBO.USER.ID";
+    
+    public static final String PROCESSING_FILES_DIRECTORY = "PROCESSING.FILES.DIRECTORY";
+    public static final String PERSIST_FILES_DIRECTORY = "PERSIST.FILES.DIRECTORY";
+    public static final String INDEX_FILES_DIRECTORY = "INDEX.FILES.DIRECTORY";
+    public static final String STATS_FILES_DIRECTORY = "STATS.FILES.DIRECTORY";
 }

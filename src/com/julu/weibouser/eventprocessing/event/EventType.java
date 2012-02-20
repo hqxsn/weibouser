@@ -4,6 +4,7 @@ import com.julu.weibouser.crawling.user.SingleUserCrawlingEventQueue;
 import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventQueue;
 import com.julu.weibouser.eventprocessing.operator.IPoller;
 import com.julu.weibouser.eventprocessing.queue.EventQueue;
+import com.julu.weibouser.processing.UserProcessingEventQueue;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -31,6 +32,15 @@ public enum EventType {
         AtomicReference<UserFollowersCrawlingEventQueue> queue = new AtomicReference<UserFollowersCrawlingEventQueue>();
         public UserFollowersCrawlingEventQueue getEventQueue() {
             if (queue.compareAndSet(null, new UserFollowersCrawlingEventQueue(250))) {
+                //Init here;
+            }
+            return queue.get();
+        }
+    },
+    USER_PROCESSING {
+        AtomicReference<UserProcessingEventQueue> queue = new AtomicReference<UserProcessingEventQueue>();
+        public UserProcessingEventQueue getEventQueue() {
+            if (queue.compareAndSet(null, new UserProcessingEventQueue(250))) {
                 //Init here;
             }
             return queue.get();

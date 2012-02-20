@@ -45,4 +45,7 @@ public class Utils {
         return returnValue;
     }
 
+    public static boolean isNullOrEmpty(String value) {
+        return value == null || value.isEmpty();
+    }
 }

@@ -17,7 +17,7 @@ public class UserFollowersCrawlingEventFactory {
     public static List<UserFollowersCrawlingEvent> create(long followUid, int followerCnt) {
         
         int batchSize = getBatchSize();
-        int repeatCnts = followerCnt / batchSize;
+        int repeatCnts = (followerCnt / batchSize) + (followerCnt % batchSize != 0 ? 1 : 0);
         
         int startPos = 0;
         List<UserFollowersCrawlingEvent> results = new ArrayList<UserFollowersCrawlingEvent>(repeatCnts);

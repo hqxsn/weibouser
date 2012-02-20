@@ -8,6 +8,7 @@ import com.julu.weibouser.crawling.user.SingleUserCrawlingEventQueue;
 import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEvent;
 import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventHandler;
 import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventQueue;
+import com.julu.weibouser.eventprocessing.EventSystem;
 import com.julu.weibouser.eventprocessing.event.EventType;
 import com.julu.weibouser.eventprocessing.exception.EventProcessingException;
 import com.julu.weibouser.eventprocessing.operator.StandalonePoller;
@@ -52,16 +53,18 @@ public class CrawlingSystem {
     }
 
     private void initUserFollowerCrawling() {
-        UserFollowersCrawlingEventQueue userFollowersCrawlingEventQueue = (UserFollowersCrawlingEventQueue) EventType.FIND_USER_FOLLOWERS.getEventQueue();
+        StandalonePoller<UserFollowersCrawlingEvent, UserFollowersCrawlingEventQueue> poller = EventSystem.getPoller(EventType.FIND_USER_FOLLOWERS);
         UserFollowersCrawlingEventHandler userFollowersCrawlingEventHandler = new UserFollowersCrawlingEventHandler(
-                new StandalonePoller<UserFollowersCrawlingEvent, UserFollowersCrawlingEventQueue>(userFollowersCrawlingEventQueue));
+                poller);
         new Thread(userFollowersCrawlingEventHandler).start();
     }
 
     private void initSingleUserCrawling() {
-        SingleUserCrawlingEventQueue singleUserCrawlingEventQueue = (SingleUserCrawlingEventQueue) EventType.FIND_USER_BY_SPECIFIED_UID.getEventQueue();
+
+
+        StandalonePoller<SingleUserCrawlingEvent, SingleUserCrawlingEventQueue> poller = EventSystem.getPoller(EventType.FIND_USER_BY_SPECIFIED_UID);
         SingleUserCrawlingEventHandler singleUserCrawlingEventHandler = new SingleUserCrawlingEventHandler(
-                new StandalonePoller<SingleUserCrawlingEvent, SingleUserCrawlingEventQueue>(singleUserCrawlingEventQueue));
+                poller);
         new Thread(singleUserCrawlingEventHandler).start();
     }
     
@@ -71,15 +74,22 @@ public class CrawlingSystem {
         event.setCrawlingTarget(Integration.getSinaWeiboType());
         event.setOriginalSourceUid(Long.getLong(Configuration.SPECIFIED_USER_ID, 1709498127l /*孙楠 UID*/));
         
-        StandalonePusher<SingleUserCrawlingEvent, SingleUserCrawlingEventQueue> pusher = new 
-                StandalonePusher<SingleUserCrawlingEvent, SingleUserCrawlingEventQueue>((SingleUserCrawlingEventQueue) 
-                EventType.FIND_USER_BY_SPECIFIED_UID.getEventQueue());
+        StandalonePusher<SingleUserCrawlingEvent, SingleUserCrawlingEventQueue> pusher =
+                EventSystem.getPusher(EventType.FIND_USER_BY_SPECIFIED_UID);
 
         try {
             pusher.push(event);
         } catch (EventProcessingException e) {
             //TODO add logic
         }
+    }
+    
+    public static void main(String[] args) {
+        System.setProperty(Configuration.WEIBO_TOKEN_STRING, "2.00tyhuHC09EMdOe80ef5d168vfOZbD");
+        System.setProperty(Configuration.PROCESSING_FILES_DIRECTORY, "d:\\log");
+        System.setProperty(Configuration.PERSIST_FILES_DIRECTORY, "files");
+        com.julu.weibouser.processing.ProcessingSystem.getInstance();
+        CrawlingSystem.getInstance().simpleAnalysis();
     }
 
 }

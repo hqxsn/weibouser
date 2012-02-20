@@ -133,7 +133,7 @@ public class SinaWeibo {
 
         Friendships friendships = new Friendships();
         try {
-            UserWapper userWapper = friendships.getFollowersById("1949215451");
+            UserWapper userWapper = friendships.getFollowersById(String.valueOf(uid), counts, currentCursor);
             List<User> users = userWapper.getUsers();
 
             return users;

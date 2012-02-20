@@ -9,8 +9,12 @@ import com.julu.weibouser.integration.Integration;
 import com.julu.weibouser.integration.IntegrationException;
 import com.julu.weibouser.integration.SinaWeibo;
 import com.julu.weibouser.logger.ConsoleLogger;
+import com.julu.weibouser.processing.ProcessingSystem;
 import weibo4j.model.User;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -37,17 +41,34 @@ public class UserFollowersCrawlingEventHandler implements IHandler<UserFollowers
         int counts = event.getCounts();
         
         if (followUid > 0) {
+            List<com.julu.weibouser.model.User> juluUsers = new ArrayList<com.julu.weibouser.model.User>();
             try {
                 List<User> users = SinaWeibo.getInstance().getUserFollowers(followUid, currentCursor, counts);
                 
+
                 for(User user : users) {
                     com.julu.weibouser.model.User juluUser = com.julu.weibouser.model.User.compose(user, Integration.getSinaWeiboType());
-                    //TODO push into persist queue
+                    juluUsers.add(juluUser);
                 }
             } catch (IntegrationException e) {
                 //TODO here will involve some company policy, to be implement later
+                consoleLogger.logError("Cannot get user followers from weibo with uid:" + followUid + " currentCursor:"
+                        + currentCursor + " counts:" + counts, e);
+            }
+
+            if (juluUsers.size() > 0) {
+                try {
+                    ProcessingSystem.getInstance().push(juluUsers);
+                } catch (IOException e) {
+                    //TODO here will involve retrying process;
+                    consoleLogger.logError("Cannot serialization user instance " + juluUsers, e);
+                } catch (EventProcessingException e) {
+                    //TODO here will involve retrying process;
+                    consoleLogger.logError("Cannot push user processing event into queue " + juluUsers, e);
+                }
             }
         }
+
     }
 
     public void run() {
