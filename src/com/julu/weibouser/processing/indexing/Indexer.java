@@ -80,6 +80,8 @@ public class Indexer implements Processing {
                 for(User user:users) {
                     Document document = new Document();
                     //TODO add need index fields
+                    document.add(new Field("uid", String.valueOf(user.getUid()), Field.Store.YES, Field.Index.ANALYZED));
+                    document.add(new Field("originalSourceUid", String.valueOf(user.getOriginalSourceUid()), Field.Store.YES, Field.Index.ANALYZED));
                     document.add(new Field("path", event.getRelatedFilePath(), Field.Store.YES, Field.Index.NOT_ANALYZED));
                     documents.add(document);
                 }
