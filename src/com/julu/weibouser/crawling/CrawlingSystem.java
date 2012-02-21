@@ -84,6 +84,10 @@ public class CrawlingSystem {
         }
     }
     
+    public boolean needDeeperAnalysis() {
+        return Boolean.getBoolean(Configuration.NEED_DEEP_ANALYSIS);
+    }
+    
     public static void main(String[] args) {
         System.setProperty(Configuration.WEIBO_TOKEN_STRING, "2.00tyhuHC09EMdOe80ef5d168vfOZbD");
         System.setProperty(Configuration.PROCESSING_FILES_DIRECTORY, "d:\\log");

@@ -71,7 +71,7 @@ public class Indexer implements Processing {
                 dir = FSDirectory.open(file);
 
                 Analyzer analyzer = new StandardAnalyzer( Version.LUCENE_35 );
-                IndexWriterConfig iwc = new IndexWriterConfig( Version.LUCENE_32,
+                IndexWriterConfig iwc = new IndexWriterConfig( Version.LUCENE_35,
                         analyzer );
                 iwc.setOpenMode( IndexWriterConfig.OpenMode.CREATE_OR_APPEND );
                 writer = new IndexWriter( dir, iwc );
@@ -79,6 +79,7 @@ public class Indexer implements Processing {
                 List<Document> documents = new ArrayList<Document>();
                 for(User user:users) {
                     Document document = new Document();
+                    //TODO add need index fields
                     document.add(new Field("path", event.getRelatedFilePath(), Field.Store.YES, Field.Index.NOT_ANALYZED));
                     documents.add(document);
                 }

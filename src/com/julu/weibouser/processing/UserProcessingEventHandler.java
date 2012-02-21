@@ -1,9 +1,13 @@
 package com.julu.weibouser.processing;
 
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEvent;
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventQueue;
+import com.julu.weibouser.eventprocessing.EventSystem;
 import com.julu.weibouser.eventprocessing.event.EventType;
 import com.julu.weibouser.eventprocessing.exception.EventProcessingException;
 import com.julu.weibouser.eventprocessing.handler.IHandler;
 import com.julu.weibouser.eventprocessing.operator.StandalonePoller;
+import com.julu.weibouser.eventprocessing.operator.StandalonePusher;
 import com.julu.weibouser.logger.ConsoleLogger;
 import com.julu.weibouser.model.User;
 import com.julu.weibouser.processing.states.State;
@@ -39,11 +43,20 @@ public class UserProcessingEventHandler implements IHandler<UserProcessingEvent>
         } else {
             Processing processing = StatesMachine.getProcessing(nextState);
             if(processing != null) {
+                 StandalonePusher<UserProcessingEvent, UserProcessingEventQueue> pusher = EventSystem.getPusher(EventType.USER_PROCESSING);
                  if(processing.processing(event)) {
                      //Successfully
+
                  } else {
                      //Failed will retry at least 3 times
                  }
+
+                try {
+                    pusher.push(event);
+                } catch (EventProcessingException e) {
+                    //Add logic future
+                    consoleLogger.logError("Cannot push into the queue " + EventType.USER_PROCESSING, e);
+                }
             } else if (processing == null && currentState == State.END) {
                 //Reach the final tasks we can finished the round of processing.
             } else if (processing == null) {

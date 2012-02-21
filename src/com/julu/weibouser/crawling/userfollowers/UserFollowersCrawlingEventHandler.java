@@ -1,14 +1,17 @@
 package com.julu.weibouser.crawling.userfollowers;
 
 import com.julu.weibouser.crawling.CrawlingSystem;
+import com.julu.weibouser.eventprocessing.EventSystem;
 import com.julu.weibouser.eventprocessing.event.EventType;
 import com.julu.weibouser.eventprocessing.exception.EventProcessingException;
 import com.julu.weibouser.eventprocessing.handler.IHandler;
 import com.julu.weibouser.eventprocessing.operator.StandalonePoller;
+import com.julu.weibouser.eventprocessing.operator.StandalonePusher;
 import com.julu.weibouser.integration.Integration;
 import com.julu.weibouser.integration.IntegrationException;
 import com.julu.weibouser.integration.SinaWeibo;
 import com.julu.weibouser.logger.ConsoleLogger;
+import com.julu.weibouser.model.IdService;
 import com.julu.weibouser.processing.ProcessingSystem;
 import weibo4j.model.User;
 
@@ -48,7 +51,29 @@ public class UserFollowersCrawlingEventHandler implements IHandler<UserFollowers
 
                 for(User user : users) {
                     com.julu.weibouser.model.User juluUser = com.julu.weibouser.model.User.compose(user, Integration.getSinaWeiboType());
-                    juluUsers.add(juluUser);
+                    
+                    if(!Integration.hasProcessed(event.getCrawlingTarget(), juluUser.getOriginalSourceUid())) {
+                        juluUser.setUid(IdService.getUniqueId());
+                        juluUsers.add(juluUser);
+                    }
+
+                    if (CrawlingSystem.getInstance().needDeeperAnalysis()) {
+                        //Resend to the queue for further analysis
+                        List<UserFollowersCrawlingEvent> subsequentEvents = UserFollowersCrawlingEventFactory.
+                                create(juluUser.getOriginalSourceUid(), juluUser.getFollowersCount());
+
+                        StandalonePusher<UserFollowersCrawlingEvent, UserFollowersCrawlingEventQueue> pusher = EventSystem.getPusher(EventType.FIND_USER_FOLLOWERS);
+                        for (UserFollowersCrawlingEvent userFollowersCrawlingEvent : subsequentEvents) {
+                            try {
+                                pusher.push(userFollowersCrawlingEvent);
+                            } catch (EventProcessingException e) {
+                                //TODO here will involve retrying process, to be implement later
+                                consoleLogger.logError("Cannot push user followers finding event into queue " + userFollowersCrawlingEvent, e);
+                            }
+                        }
+
+                    }
+                    
                 }
             } catch (IntegrationException e) {
                 //TODO here will involve some company policy, to be implement later

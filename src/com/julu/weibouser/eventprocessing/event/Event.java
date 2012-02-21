@@ -10,5 +10,7 @@ package com.julu.weibouser.eventprocessing.event;
 public interface Event {
     
     public EventType getEventType();
+
+    public byte getRetryingCount();
     
 }

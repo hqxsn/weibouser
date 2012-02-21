@@ -21,4 +21,6 @@ public class Configuration {
     public static final String PERSIST_FILES_DIRECTORY = "PERSIST.FILES.DIRECTORY";
     public static final String INDEX_FILES_DIRECTORY = "INDEX.FILES.DIRECTORY";
     public static final String STATS_FILES_DIRECTORY = "STATS.FILES.DIRECTORY";
+    public static final String NEED_DEEP_ANALYSIS = "NEED.DEEP.ANALYSIS";
+
 }

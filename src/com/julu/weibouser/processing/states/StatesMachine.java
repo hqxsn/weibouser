@@ -1,6 +1,7 @@
 package com.julu.weibouser.processing.states;
 
 import com.julu.weibouser.processing.Processing;
+import com.julu.weibouser.processing.indexing.Indexer;
 import com.julu.weibouser.processing.persistence.Peresistor;
 
 /**
@@ -44,6 +45,7 @@ public class StatesMachine {
                 processing = new Peresistor();
                 break;
             case INDEXING:
+                processing = new Indexer();
                 break;
             case STATS:
                 break;

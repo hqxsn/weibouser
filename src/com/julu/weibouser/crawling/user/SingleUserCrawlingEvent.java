@@ -16,8 +16,18 @@ public class SingleUserCrawlingEvent implements Event {
 
     private byte crawlingTarget;
 
+    private byte retryingCount = 0;
+
     public EventType getEventType() {
         return EventType.FIND_USER_BY_SPECIFIED_UID;
+    }
+
+    public byte getRetryingCount() {
+        return retryingCount;
+    }
+
+    public void increaseRetryingCount() {
+        ++retryingCount;
     }
 
     public long getOriginalSourceUid() {

@@ -10,9 +10,11 @@ import com.julu.weibouser.eventprocessing.exception.EventProcessingException;
 import com.julu.weibouser.eventprocessing.handler.IHandler;
 import com.julu.weibouser.eventprocessing.operator.StandalonePoller;
 import com.julu.weibouser.eventprocessing.operator.StandalonePusher;
+import com.julu.weibouser.integration.Integration;
 import com.julu.weibouser.integration.IntegrationException;
 import com.julu.weibouser.integration.SinaWeibo;
 import com.julu.weibouser.logger.ConsoleLogger;
+import com.julu.weibouser.model.IdService;
 import com.julu.weibouser.processing.ProcessingSystem;
 
 import java.io.IOException;
@@ -46,8 +48,7 @@ public class SingleUserCrawlingEventHandler implements IHandler<SingleUserCrawli
 
                 if (user != SinaWeibo.USER_NOT_FOUND) {
                     com.julu.weibouser.model.User juluUser = com.julu.weibouser.model.User.compose(user, event.getCrawlingTarget());
-                    //TODO push into persist queue
-
+                    
                     List<UserFollowersCrawlingEvent> subsequentEvents = UserFollowersCrawlingEventFactory.
                             create(juluUser.getOriginalSourceUid(), juluUser.getFollowersCount());
 
@@ -56,19 +57,20 @@ public class SingleUserCrawlingEventHandler implements IHandler<SingleUserCrawli
                         try {
                             pusher.push(userFollowersCrawlingEvent);
                         } catch (EventProcessingException e) {
-                            //TODO here will involve retrying process, to be implement later
                             consoleLogger.logError("Cannot push user followers finding event into queue " + userFollowersCrawlingEvent, e);
                         }
                     }
 
-                    try {
-                        ProcessingSystem.getInstance().push(Arrays.asList(juluUser));
-                    } catch (IOException e) {
-                        //TODO here will involve retrying process;
-                        consoleLogger.logError("Cannot serialization user instance " + juluUser, e);
-                    } catch (EventProcessingException e) {
-                        //TODO here will involve retrying process;
-                        consoleLogger.logError("Cannot push user processing event into queue " + juluUser, e);
+                    if (!Integration.hasProcessed(event.getCrawlingTarget(), juluUser.getOriginalSourceUid())) {
+                        try {
+                            juluUser.setUid(IdService.getUniqueId());
+                            ProcessingSystem.getInstance().push(Arrays.asList(juluUser));
+                        } catch (IOException e) {
+                            consoleLogger.logError("Cannot serialization user instance " + juluUser, e);
+                        } catch (EventProcessingException e) {
+                            //TODO here will involve retrying process;
+                            consoleLogger.logError("Cannot push user processing event into queue " + juluUser, e);
+                        }
                     }
 
                 } else {

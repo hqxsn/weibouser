@@ -21,9 +21,21 @@ public class UserFollowersCrawlingEvent implements Event {
 
     //The counts need retrieve
     private int counts;
+
+    private byte crawlingTarget;
+
+    private byte retryingCount = 0;
     
     public EventType getEventType() {
         return EventType.FIND_USER_FOLLOWERS;
+    }
+
+    public byte getRetryingCount() {
+        return retryingCount;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void increaseRetryingCount() {
+        ++ retryingCount;
     }
 
     public long getOriginalSourceHostUid() {
@@ -48,5 +60,13 @@ public class UserFollowersCrawlingEvent implements Event {
 
     public void setCounts(int counts) {
         this.counts = counts;
+    }
+
+    public byte getCrawlingTarget() {
+        return crawlingTarget;
+    }
+
+    public void setCrawlingTarget(byte crawlingTarget) {
+        this.crawlingTarget = crawlingTarget;
     }
 }

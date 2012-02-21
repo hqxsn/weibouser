@@ -19,4 +19,8 @@ public class Integration {
         return (SINA_WEIBO ^ type) == 0;
     }
 
+    public static boolean hasProcessed(byte integrationType, long outSystemId) {
+        //Will leverage bit set check whether or not the id has been processed.
+        return false;
+    }
 }
