@@ -1,8 +1,11 @@
 package com.julu.weibouser.util;
 
+import com.julu.weibouser.model.User;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 
 /**
  * Created by TwinsFather.
@@ -47,5 +50,9 @@ public class Utils {
 
     public static boolean isNullOrEmpty(String value) {
         return value == null || value.isEmpty();
+    }
+
+    public static boolean isNullOrEmpty(List<User> list) {
+        return list == null || list.size() == 0;
     }
 }

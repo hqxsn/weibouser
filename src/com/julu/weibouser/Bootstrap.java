@@ -1,6 +1,7 @@
 package com.julu.weibouser;
 
 import com.julu.weibouser.crawling.CrawlingSystem;
+import com.julu.weibouser.processing.ProcessingSystem;
 import com.julu.weibouser.system.AbstractBootstrap;
 
 /**
@@ -11,12 +12,21 @@ import com.julu.weibouser.system.AbstractBootstrap;
  * To change this template use File | Settings | File Templates.
  */
 public class Bootstrap extends AbstractBootstrap {
-    
+
+    ProcessingSystem processingSystem;
+
+    CrawlingSystem crawlingSystem;
     
     @Override
     public void doStartSystem() {
+        //Start processing system
+        processingSystem = ProcessingSystem.getInstance();
         //Start CrawlingSystem module and trigger specified user analysis
-        CrawlingSystem.getInstance().simpleAnalysis();
+        crawlingSystem = CrawlingSystem.getInstance();
+        //Add shutdown hook for close the system properly
+        Runtime.getRuntime().addShutdownHook(new ShutdownHook(processingSystem, crawlingSystem));
+
+        crawlingSystem.simpleAnalysis();
 
     }
 
@@ -32,5 +42,7 @@ public class Bootstrap extends AbstractBootstrap {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.initiateSystem(args[0]);
         bootstrap.startSystem();
+
+
     }
 }
