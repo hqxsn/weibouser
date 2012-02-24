@@ -1,0 +1,1 @@
+java -classpath commons-codec.jar;commons-httpclient-3.1.jar;commons-logging-1.1.jar;jackson-all-1.8.5.jar;weibo.jar;log4j-1.2.16.jar;./ weibo4j.examples.oauth2.OAuth4Code
