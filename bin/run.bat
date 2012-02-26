@@ -5,7 +5,7 @@ SET LIB_HOME=..\
 SET PROPERTYPATH=.
 SET JARPATH=.
 
-SET CLASSPATH=%JARPATH%\commons-codec.jar;%JARPATH%\commons-httpclient-3.1.jar;%JARPATH%\commons-logging-1.1.jar;%JARPATH%\jackson-all-1.8.5.jar;%JARPATH%\weibo.jar;%JARPATH%\log4j-1.2.16.jar;%JARPATH%\msgpack-0.6.5.jar;%JARPATH%\weibousermanagement.jar;%JARPATH%\javassist.jar;%JARPATH%\lucene-core-3.5.0.jar
+SET CLASSPATH=%JARPATH%\commons-codec.jar;%JARPATH%\commons-httpclient-3.1.jar;%JARPATH%\commons-logging-1.1.jar;%JARPATH%\jackson-all-1.8.5.jar;%JARPATH%\weibo.jar;%JARPATH%\log4j-1.2.16.jar;%JARPATH%\msgpack-0.6.5.jar;%JARPATH%\weibousermanagement.jar;%JARPATH%\javassist.jar;%JARPATH%\lucene-core-3.5.0.jar;%JARPATH%\multilanecommonj.jar;%JARPATH%\lb.jar;.\
 echo %CLASS_HOME%
 
 FOR /R %LIB_HOME%\lib %%G IN (*.jar) DO set CLASSPATH=!CLASSPATH!;%%G

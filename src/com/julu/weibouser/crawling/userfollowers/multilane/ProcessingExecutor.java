@@ -1,81 +1,59 @@
-package com.julu.weibouser.crawling.userfollowers;
+package com.julu.weibouser.crawling.userfollowers.multilane;
 
-import com.julu.weibouser.config.Configuration;
 import com.julu.weibouser.crawling.CrawlingSystem;
-import com.julu.weibouser.crawling.userfollowers.multilane.ProcessingWork;
-import com.julu.weibouser.crawling.userfollowers.multilane.ProcessingWorkEntry;
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEvent;
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventFactory;
+import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventQueue;
 import com.julu.weibouser.eventprocessing.EventSystem;
 import com.julu.weibouser.eventprocessing.event.EventType;
 import com.julu.weibouser.eventprocessing.exception.EventProcessingException;
-import com.julu.weibouser.eventprocessing.handler.IHandler;
-import com.julu.weibouser.eventprocessing.operator.StandalonePoller;
 import com.julu.weibouser.eventprocessing.operator.StandalonePusher;
 import com.julu.weibouser.integration.Integration;
 import com.julu.weibouser.integration.IntegrationException;
 import com.julu.weibouser.integration.SinaWeibo;
 import com.julu.weibouser.logger.ConsoleLogger;
 import com.julu.weibouser.model.IdService;
+import com.julu.weibouser.model.User;
 import com.julu.weibouser.processing.ProcessingSystem;
-import com.tinybang.commonj.WorkManagerFactory;
-import com.tinybang.commonj.WorkType;
-import weibo4j.model.User;
+import com.tinybang.commonj.AbstractWorkExecutor;
+import com.tinybang.commonj.EventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by TwinsFather.
  * User: andy.song
- * Date: 2/18/12
- * Time: 12:45 AM
+ * Date: 2/26/12
+ * Time: 5:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public class UserFollowersCrawlingEventHandler implements IHandler<UserFollowersCrawlingEvent>, Runnable {
+public class ProcessingExecutor extends AbstractWorkExecutor<ProcessingWork> {
+    private static ConsoleLogger consoleLogger = new ConsoleLogger(ProcessingExecutor.class.getName());
 
-    private static ConsoleLogger consoleLogger = new ConsoleLogger(UserFollowersCrawlingEventHandler.class.getName());
-
-    private StandalonePoller<UserFollowersCrawlingEvent, UserFollowersCrawlingEventQueue> poller;
-
-    public UserFollowersCrawlingEventHandler(StandalonePoller<UserFollowersCrawlingEvent, UserFollowersCrawlingEventQueue> poller) {
-        this.poller = poller;
+    public ProcessingExecutor(ProcessingWork work) {
+        super(work);
     }
 
-    public void handle(UserFollowersCrawlingEvent event) {
+    public void execute(EventListener eventListener) {
         //long timeMilli = System.currentTimeMillis();
-
-        if (Boolean.getBoolean(Configuration.MULTI_LANE_MODES)) {
-
-            ProcessingWorkEntry entry = new ProcessingWorkEntry();
-            ProcessingWork work = new ProcessingWork();
-            work.setEvent(event);
-            entry.setWork(work);
-            try {
-                WorkManagerFactory.getInstance().getWorkManager(WorkType.LOG).schedule(UUID.randomUUID(), entry);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            return;
-
-        }
-
+        UserFollowersCrawlingEvent event = work.getEvent();
         long followUid = event.getOriginalSourceHostUid();
         int currentCursor = event.getCurrentCursor();
         int counts = event.getCounts();
-        
-        if (followUid > 0) {
-            List<com.julu.weibouser.model.User> juluUsers = new ArrayList<com.julu.weibouser.model.User>();
-            try {
-                List<User> users = SinaWeibo.getInstance().getUserFollowers(followUid, currentCursor, counts);
-                
 
-                for(User user : users) {
+        if (followUid > 0) {
+            List<User> juluUsers = new ArrayList<User>();
+            try {
+                List<weibo4j.model.User> users = SinaWeibo.getInstance().getUserFollowers(followUid, currentCursor, counts);
+
+                //System.out.println("UserFollowersCrawlingEventHandler.getinguserfollowers () need:" + (System.currentTimeMillis()-timeMilli));
+
+
+                for(weibo4j.model.User user : users) {
                     com.julu.weibouser.model.User juluUser = com.julu.weibouser.model.User.compose(user, Integration.getSinaWeiboType());
-                    
+
                     if(!Integration.hasProcessed(event.getCrawlingTarget(), juluUser.getOriginalSourceUid())) {
                         juluUser.setUid(IdService.getUniqueId());
                         juluUsers.add(juluUser);
@@ -97,13 +75,15 @@ public class UserFollowersCrawlingEventHandler implements IHandler<UserFollowers
                         }
 
                     }
-                    
+
                 }
             } catch (IntegrationException e) {
                 //TODO here will involve some company policy, to be implement later
                 consoleLogger.logError("Cannot get user followers from weibo with uid:" + followUid + " currentCursor:"
                         + currentCursor + " counts:" + counts, e);
             }
+
+            //System.out.println("UserFollowersCrawlingEventHandler.handle() constructing need:" + (System.currentTimeMillis()-timeMilli));
 
             if (juluUsers.size() > 0) {
                 try {
@@ -116,22 +96,14 @@ public class UserFollowersCrawlingEventHandler implements IHandler<UserFollowers
                     consoleLogger.logError("Cannot push user processing event into queue " + juluUsers, e);
                 }
             }
+
+            //System.out.println("UserFollowersCrawlingEventHandler.handle() pushing need:" + (System.currentTimeMillis()-timeMilli));
         }
-
         //System.out.println("UserFollowersCrawlingEventHandler.handle() need:" + (System.currentTimeMillis()-timeMilli));
-
     }
 
-    public void run() {
-        while (CrawlingSystem.getInstance().isRunning()) {
-            try {
-                UserFollowersCrawlingEvent event = poller.consume(500l, TimeUnit.MILLISECONDS);
-                if (event != null) {
-                    handle(event);
-                }
-            } catch (EventProcessingException e) {
-                consoleLogger.logError("Not successfully get event from event queue:" + EventType.FIND_USER_BY_SPECIFIED_UID, e);
-            }
-        }
+    @Override
+    public EventListener<ProcessingWork> getEventListener() {
+        return null;
     }
 }

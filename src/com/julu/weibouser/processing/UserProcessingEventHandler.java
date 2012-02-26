@@ -1,5 +1,6 @@
 package com.julu.weibouser.processing;
 
+import com.julu.weibouser.config.Configuration;
 import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEvent;
 import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventQueue;
 import com.julu.weibouser.eventprocessing.EventSystem;
@@ -10,11 +11,17 @@ import com.julu.weibouser.eventprocessing.operator.StandalonePoller;
 import com.julu.weibouser.eventprocessing.operator.StandalonePusher;
 import com.julu.weibouser.logger.ConsoleLogger;
 import com.julu.weibouser.model.User;
+import com.julu.weibouser.processing.mulitilane.ProcessingWork;
+import com.julu.weibouser.processing.mulitilane.ProcessingWorkEntry;
 import com.julu.weibouser.processing.states.State;
 import com.julu.weibouser.processing.states.StatesMachine;
+import com.tinybang.commonj.WorkManagerFactory;
+import com.tinybang.commonj.WorkType;
+import com.tinybang.commonj.sample.SampleWork;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,6 +41,22 @@ public class UserProcessingEventHandler implements IHandler<UserProcessingEvent>
     }
 
     public void handle(UserProcessingEvent event) {
+        
+        if (Boolean.getBoolean(Configuration.MULTI_LANE_MODES)) {
+
+            ProcessingWorkEntry entry = new ProcessingWorkEntry();
+            ProcessingWork work = new ProcessingWork();
+            work.setEvent(event);
+            entry.setWork(work);
+            try {
+                WorkManagerFactory.getInstance().getWorkManager(WorkType.COMMAND).schedule(UUID.randomUUID(), entry);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            return;
+
+        }
 
         State currentState = event.getCurrentState();
         State nextState = StatesMachine.getNextState(currentState);

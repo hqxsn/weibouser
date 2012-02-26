@@ -26,6 +26,8 @@ public class Peresistor implements Processing {
     }
     
     public boolean processing(UserProcessingEvent event) {
+        
+        //long timeMilli = System.currentTimeMillis();
         FilePersistor persistor = new FilePersistor();
         String filePath = persistor.persist(event.getRelatedValue());
         if (Utils.isNullOrEmpty(filePath)) {
@@ -37,6 +39,8 @@ public class Peresistor implements Processing {
             event.setCurrentState(StatesMachine.getNextState(event.getCurrentState()));
             event.resetRetryCount();
         }
+
+        //System.out.println("Peresistor.processing() need:" + (System.currentTimeMillis()-timeMilli));
 
         return true;
     }

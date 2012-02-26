@@ -1,0 +1,36 @@
+1. System dependency
+   * JDK 1.6 or above
+   * Internet Connection
+   * Libraries:
+			commons-codec.jar
+			commons-httpclient-3.1.jar
+			commons-logging-1.1.jar
+			jackson-all-1.8.5.jar
+			javassist.jar
+			jsr166.jar
+			log4j-1.2.16.jar
+			lucene-core-3.5.0.jar
+			msgpack-0.6.5.jar
+			weibo.jar
+      weibousermanagement.jar
+   * At least 1 driver with 1G space
+   * Memory need at least 512M ideal will be 1024M for scaling consideration
+2. Configuration items:
+	 * USER.CALLING.LIMITS
+	   weibo only allow the testing account calling weibo 150/hr
+	 * RESET.USER.CALLING.LIMITS.INTERVAL
+	   recycle the calling limits from milliseconds based right now the default is 3600
+	 * WEIBO.TOKEN
+	   the token need calling sinaweibo api
+	 * PROCESSING.FILES.DIRECTORY
+	   the root directory for saving the final results
+	 * PERSIST.FILES.DIRECTORY
+	   the directory of weibo calling results
+	 * INDEX.FILES.DIRECTORY
+	   the directory of weibo results indexing results
+	 * STATS.FILES.DIRECTORY 
+	   the directory of weibo results stats results
+3. Exeuction steps:
+	 1. Execute getAccessToken.bat trying get the token from SinaWeibo
+	 2. set the token getted from first step as the value of WEIBO.TOKEN of runtime.properties
+	 3. Then execute the run.bat file

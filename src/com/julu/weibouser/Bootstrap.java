@@ -27,6 +27,7 @@ public class Bootstrap extends AbstractBootstrap {
         Runtime.getRuntime().addShutdownHook(new ShutdownHook(processingSystem, crawlingSystem));
 
         crawlingSystem.simpleAnalysis();
+        crawlingSystem.advanceAnalysis();
 
     }
 

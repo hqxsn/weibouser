@@ -27,7 +27,7 @@ public class FilePersistor {
     //Persist and return file name
     public String persist(byte[] bytes) {
         UUID uuid = UUID.randomUUID();
-        
+
         String filePath = getConfiguredDirectoryPath() + System.getProperty("file.separator") + uuid.toString();
 
 

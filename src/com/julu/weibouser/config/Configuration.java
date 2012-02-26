@@ -23,4 +23,7 @@ public class Configuration {
     public static final String STATS_FILES_DIRECTORY = "STATS.FILES.DIRECTORY";
     public static final String NEED_DEEP_ANALYSIS = "NEED.DEEP.ANALYSIS";
 
+    public static final String GET_FOLLOWERS_MAXIMUM_SIZE = "GET.FOLLOWERS.MAXIMUM.SIZE";
+    public static final String MULTI_LANE_MODES = "MULTI.LANE.MODES";
+    public static final String MULTI_LANE_MODES_PERSISTENCE = "MULTI.LANE.MODES.PERSISTENCE";
 }

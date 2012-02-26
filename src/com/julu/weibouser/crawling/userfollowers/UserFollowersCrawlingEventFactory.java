@@ -15,13 +15,18 @@ import java.util.List;
 public class UserFollowersCrawlingEventFactory {
 
     public static List<UserFollowersCrawlingEvent> create(long followUid, int followerCnt) {
-        
+
         int batchSize = getBatchSize();
+
+
+        if (followerCnt > getMaximumSize()) {
+            followerCnt = getMaximumSize();
+        }
+
         int repeatCnts = (followerCnt / batchSize) + (followerCnt % batchSize != 0 ? 1 : 0);
-        
         int startPos = 0;
         List<UserFollowersCrawlingEvent> results = new ArrayList<UserFollowersCrawlingEvent>(repeatCnts);
-        for(int i = 0; i < repeatCnts; ++i) {
+        for (int i = 0; i < repeatCnts; ++i) {
 
 
             UserFollowersCrawlingEvent event = new UserFollowersCrawlingEvent();
@@ -32,12 +37,15 @@ public class UserFollowersCrawlingEventFactory {
 
             startPos += batchSize;
         }
-        
+
         return results;
     }
-    
+
     static int getBatchSize() {
         return Integer.getInteger(Configuration.BATCH_CALLING_SIZE, 200);
     }
 
+    public static int getMaximumSize() {
+        return Integer.getInteger(Configuration.GET_FOLLOWERS_MAXIMUM_SIZE, 5000);
+    }
 }

@@ -8,12 +8,16 @@ import org.msgpack.template.ListTemplate;
 import org.msgpack.template.Template;
 import org.msgpack.unpacker.Unpacker;
 import weibo4j.Friendships;
+import weibo4j.Suggestion;
 import weibo4j.Users;
 import weibo4j.Weibo;
 import weibo4j.examples.oauth2.Log;
 import weibo4j.model.User;
 import weibo4j.model.UserWapper;
 import weibo4j.model.WeiboException;
+import weibo4j.org.json.JSONArray;
+import weibo4j.org.json.JSONException;
+import weibo4j.org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,7 +30,7 @@ public class A {
     
     public static void main(String[] args) {
         Weibo weibo = new Weibo();
-        weibo.setToken("2.00tyhuHC09EMdOe80ef5d168vfOZbD");
+        weibo.setToken("2.00tyhuHC09EMdO6f6d748617i2szSE");
         String uid =  "1709498127";
         Users um = new Users();
         try {
@@ -80,14 +84,40 @@ public class A {
 
         Friendships friendships = new Friendships();
         try {
-            UserWapper userWapper = friendships.getFollowersById("1709498127");
+            UserWapper userWapper = friendships.getFollowersById("1709498127", 200, 0);
             List<User> users = userWapper.getUsers();
             
-            for(User user:users) {
-                Log.logInfo(user.toString());
-            }
+            System.out.println(users.size());
+            
+            System.out.println(userWapper.getNextCursor());
+
+            userWapper = friendships.getFollowersById("1709498127", 200, 4600);
+
+            System.out.println(userWapper.getNextCursor());
+            users = userWapper.getUsers();
+
+            System.out.println(users.size());
+            
+            String[] ids = friendships.getFollowersIdsById("1709498127", 200, 5000);
         } catch (WeiboException e) {
             e.printStackTrace();
+        }
+
+        Suggestion suggestion = new Suggestion();
+        try {
+            JSONArray jsonArray = suggestion.suggestionsUsersHot();
+            
+            System.out.println(jsonArray.get(0));
+            
+            int length = jsonArray.length(); 
+            for(int i=0; i<length; ++i) {
+                User user = new User(jsonArray.getJSONObject(i));
+                System.out.println(user.getId());
+            }
+        } catch (WeiboException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
         /*try {

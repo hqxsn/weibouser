@@ -1,5 +1,7 @@
 package com.julu.weibouser.eventprocessing.event;
 
+import com.julu.weibouser.crawling.hotuser.HotUserCrawlingEvent;
+import com.julu.weibouser.crawling.hotuser.HotUserCrawlingEventQueue;
 import com.julu.weibouser.crawling.user.SingleUserCrawlingEventQueue;
 import com.julu.weibouser.crawling.userfollowers.UserFollowersCrawlingEventQueue;
 import com.julu.weibouser.eventprocessing.operator.IPoller;
@@ -26,6 +28,14 @@ public enum EventType {
         }
     },
     FIND_USERS_BY_SUGGESTION_HOT {
+
+        AtomicReference<HotUserCrawlingEventQueue> queue = new AtomicReference<HotUserCrawlingEventQueue>();
+        public HotUserCrawlingEventQueue getEventQueue() {
+            if (queue.compareAndSet(null, new HotUserCrawlingEventQueue(10))) {
+                //Init here;
+            }
+            return queue.get();
+        }
 
     },
     FIND_USER_FOLLOWERS {
